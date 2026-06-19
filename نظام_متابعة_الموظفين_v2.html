@@ -941,24 +941,35 @@ async function loadComments() {
 async function sendComment() {
   const content = document.getElementById('chat-input').value.trim();
   if(!content) return;
-  // إضافة التعليق
   const {error} = await sb.from('comments').insert({task_id: chatTaskId, employee_id: currentUser.id, content});
   if(error) { toast('❌ فشل الإرسال'); return; }
   document.getElementById('chat-input').value = '';
-  // تغيير الحالة لقيد الحوار إذا كان المدير أو المنشئ يرد
+
   const isAdminOrCreator = currentUser.role==='admin' || currentUser.id===chatTask.created_by;
+
+  // تغيير الحالة لقيد الحوار عند رد المدير أو المنشئ (إلا لو مكتملة بقرار)
   if(isAdminOrCreator && chatTask.status !== 'مكتملة') {
     await sb.from('tasks').update({status:'قيد الحوار', updated_at: new Date().toISOString()}).eq('id', chatTaskId);
     chatTask.status = 'قيد الحوار';
     document.getElementById('chat-status-bar').innerHTML = `الحالة: ${sBadge('قيد الحوار')}`;
-    // إشعار الموظف
-    await sendNotification(chatTask.assigned_to, `لديك رد جديد على المهمة "${chatTask.title}"`, chatTask.title, 'قيد الحوار', chatTask.due_date, chatTaskId, content);
+    document.getElementById('chat-close-btn').style.display = 'block';
+    // إشعار الموظف المكلف
+    await sendNotification(chatTask.assigned_to, `لديك رد جديد على المهمة "${chatTask.title}":\n\n"${content}"`, chatTask.title, 'قيد الحوار', chatTask.due_date, chatTaskId, content);
     await loadAll();
   } else {
-    // إشعار المنشئ
-    await sendNotification(chatTask.created_by, `رد جديد من ${currentUser.name} على المهمة "${chatTask.title}"`, chatTask.title, chatTask.status, chatTask.due_date, chatTaskId, content);
+    // الموظف يرد — إشعار للمنشئ والمدير
+    const recipients = new Set();
+    if(chatTask.created_by) recipients.add(chatTask.created_by);
+    // إشعار المدير
+    allEmployees.filter(e=>e.role==='admin').forEach(a=>recipients.add(a.id));
+    for(const rid of recipients) {
+      if(rid !== currentUser.id) {
+        await sendNotification(rid, `رد جديد من ${currentUser.name} على المهمة "${chatTask.title}":\n\n"${content}"`, chatTask.title, chatTask.status, chatTask.due_date, chatTaskId, content);
+      }
+    }
   }
   await loadComments();
+  toast('✅ تم إرسال الرد');
 }
 
 async function closeTask() {
