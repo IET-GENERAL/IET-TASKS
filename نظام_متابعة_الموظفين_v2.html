@@ -344,7 +344,7 @@ body.is-admin .admin-only-block { display: block; }
       <div class="form-group"><label>الموظف المسؤول *</label><select id="t-emp"></select></div>
       <div class="form-group"><label>الأولوية</label><select id="t-priority"><option>عالية</option><option selected>متوسطة</option><option>منخفضة</option></select></div>
       <div class="form-group"><label>تاريخ الاستحقاق</label><input type="date" id="t-date"></div>
-      <div class="form-group"><label>الحالة</label><select id="t-status"><option>قيد التنفيذ</option><option>مكتملة</option><option>متأخرة</option></select></div>
+      <div class="form-group"><label>الحالة</label><select id="t-status"><option>قيد التنفيذ</option><option>مكتملة</option><option>متأخرة</option><option>قيد الحوار</option></select></div>
       <div class="form-group form-full"><label>ملاحظات</label><textarea id="t-notes" rows="2" placeholder="تفاصيل إضافية..."></textarea></div>
     </div>
     <div class="modal-footer">
@@ -406,6 +406,24 @@ body.is-admin .admin-only-block { display: block; }
     <div class="modal-footer">
       <button class="btn" onclick="closeModal('modal-emp')">إلغاء</button>
       <button class="btn btn-primary" onclick="saveEmployee()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-chat">
+  <div class="modal" style="width:580px">
+    <div class="modal-title" id="chat-task-title">💬 حوار المهمة</div>
+    <div id="chat-status-bar" style="margin-bottom:12px"></div>
+    <div id="chat-messages" style="background:var(--bg);border-radius:10px;padding:12px;min-height:200px;max-height:350px;overflow-y:auto;margin-bottom:12px;display:flex;flex-direction:column;gap:8px"></div>
+    <div style="display:flex;gap:8px;align-items:flex-end">
+      <textarea id="chat-input" rows="2" placeholder="اكتب ردك هنا..." style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:var(--bg);resize:none"></textarea>
+      <button class="btn btn-primary" onclick="sendComment()" style="height:fit-content">إرسال</button>
+    </div>
+    <div id="chat-close-btn" style="margin-top:12px;display:none">
+      <button class="btn btn-sm badge-green" style="background:var(--green-light);color:var(--green);border-color:#BBF7D0" onclick="closeTask()">✅ إغلاق المهمة وجعلها مكتملة</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-chat')">إغلاق</button>
     </div>
   </div>
 </div>
@@ -577,6 +595,7 @@ function renderTasks(list){
       <td>${sBadge(t.status)}</td>
       <td style="white-space:nowrap">
         ${canEdit?`<button class="btn btn-edit btn-sm" onclick="editTask(${t.id})">✏️ تعديل</button>`:''}
+        <button class="btn btn-sm" style="background:#EDE9FE;color:#5B21B6;border-color:#DDD6FE;margin-right:4px" onclick="openChat(${t.id})">💬 حوار</button>
         ${currentUser&&currentUser.role==='admin'?`<button class="btn btn-danger btn-sm" style="margin-right:4px" onclick="deleteRow('tasks',${t.id},loadAll)">🗑️</button>`:''}
       </td></tr>`;
   }).join('');
@@ -645,7 +664,7 @@ function renderEmployees(){
 }
 
 // BADGES
-function sBadge(s){return({'مكتملة':'<span class="badge badge-green">مكتملة</span>','قيد التنفيذ':'<span class="badge badge-blue">قيد التنفيذ</span>','متأخرة':'<span class="badge badge-red">متأخرة</span>'})[s]||`<span class="badge badge-gray">${s||'—'}</span>`;}
+function sBadge(s){return({'مكتملة':'<span class="badge badge-green">مكتملة</span>','قيد التنفيذ':'<span class="badge badge-blue">قيد التنفيذ</span>','متأخرة':'<span class="badge badge-red">متأخرة</span>','قيد الحوار':'<span class="badge badge-purple">💬 قيد الحوار</span>'})[s]||`<span class="badge badge-gray">${s||'—'}</span>`;}
 function pBadge(p){return({'عالية':'<span class="badge badge-red">عالية</span>','متوسطة':'<span class="badge badge-amber">متوسطة</span>','منخفضة':'<span class="badge badge-gray">منخفضة</span>'})[p]||`<span class="badge badge-gray">${p||'—'}</span>`;}
 
 // SAVE TASK
@@ -877,6 +896,81 @@ function renderReports(list) {
       <td style="font-size:12px;color:var(--text-3)">${updated}</td>
     </tr>`;
   }).join('');
+}
+
+// CHAT
+let chatTaskId = null;
+let chatTask = null;
+
+async function openChat(taskId) {
+  chatTaskId = taskId;
+  chatTask = allTasks.find(t => t.id === taskId);
+  if(!chatTask) return;
+  document.getElementById('chat-task-title').textContent = `💬 ${chatTask.title}`;
+  document.getElementById('chat-status-bar').innerHTML = `الحالة: ${sBadge(chatTask.status)}`;
+  // زر الإغلاق للمدير أو المنشئ فقط
+  const canClose = currentUser && (currentUser.role==='admin' || currentUser.id===chatTask.created_by);
+  document.getElementById('chat-close-btn').style.display = canClose && chatTask.status !== 'مكتملة' ? 'block' : 'none';
+  openModal('modal-chat');
+  await loadComments();
+}
+
+async function loadComments() {
+  const {data} = await sb.from('comments').select('*').eq('task_id', chatTaskId).order('created_at');
+  const container = document.getElementById('chat-messages');
+  if(!data || !data.length) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-3);font-size:13px;padding:20px">لا توجد تعليقات بعد — ابدأ الحوار!</div>';
+    return;
+  }
+  container.innerHTML = data.map(c => {
+    const isMe = currentUser && c.employee_id === currentUser.id;
+    const name = empName(c.employee_id);
+    const time = new Date(c.created_at).toLocaleString('ar-SA');
+    const ei = empIdx(c.employee_id);
+    return `<div style="display:flex;gap:8px;align-items:flex-start;${isMe?'flex-direction:row-reverse':''}">
+      ${avt(name, ei)}
+      <div style="max-width:75%">
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:3px;${isMe?'text-align:left':''}">${name} · ${time}</div>
+        <div style="background:${isMe?'var(--accent)':'white'};color:${isMe?'white':'var(--text)'};padding:8px 12px;border-radius:${isMe?'12px 4px 12px 12px':'4px 12px 12px 12px'};font-size:13px;border:1px solid var(--border)">${c.content}</div>
+      </div>
+    </div>`;
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+async function sendComment() {
+  const content = document.getElementById('chat-input').value.trim();
+  if(!content) return;
+  // إضافة التعليق
+  const {error} = await sb.from('comments').insert({task_id: chatTaskId, employee_id: currentUser.id, content});
+  if(error) { toast('❌ فشل الإرسال'); return; }
+  document.getElementById('chat-input').value = '';
+  // تغيير الحالة لقيد الحوار إذا كان المدير أو المنشئ يرد
+  const isAdminOrCreator = currentUser.role==='admin' || currentUser.id===chatTask.created_by;
+  if(isAdminOrCreator && chatTask.status !== 'مكتملة') {
+    await sb.from('tasks').update({status:'قيد الحوار', updated_at: new Date().toISOString()}).eq('id', chatTaskId);
+    chatTask.status = 'قيد الحوار';
+    document.getElementById('chat-status-bar').innerHTML = `الحالة: ${sBadge('قيد الحوار')}`;
+    // إشعار الموظف
+    await sendNotification(chatTask.assigned_to, `لديك رد جديد على المهمة "${chatTask.title}"`, chatTask.title, 'قيد الحوار', chatTask.due_date, chatTaskId, content);
+    await loadAll();
+  } else {
+    // إشعار المنشئ
+    await sendNotification(chatTask.created_by, `رد جديد من ${currentUser.name} على المهمة "${chatTask.title}"`, chatTask.title, chatTask.status, chatTask.due_date, chatTaskId, content);
+  }
+  await loadComments();
+}
+
+async function closeTask() {
+  if(!confirm('هل أنت متأكد من إغلاق المهمة وجعلها مكتملة؟')) return;
+  await sb.from('tasks').update({status:'مكتملة', updated_at: new Date().toISOString()}).eq('id', chatTaskId);
+  chatTask.status = 'مكتملة';
+  document.getElementById('chat-status-bar').innerHTML = `الحالة: ${sBadge('مكتملة')}`;
+  document.getElementById('chat-close-btn').style.display = 'none';
+  // إشعار الموظف
+  await sendNotification(chatTask.assigned_to, `تم إغلاق المهمة "${chatTask.title}" وتحديد حالتها كمكتملة`, chatTask.title, 'مكتملة', chatTask.due_date, chatTaskId, '');
+  await loadAll();
+  toast('✅ تم إغلاق المهمة');
 }
 
 // Set defaults
