@@ -1,0 +1,7 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<rect width="512" height="512" fill="#FFFFFF" rx="60"/>
+<rect x="40" y="40" width="432" height="432" rx="8" fill="none" stroke="#C9A84C" stroke-width="3"/>
+<text x="256" y="310" text-anchor="middle" font-family="Georgia, serif" font-size="160" font-weight="700" fill="#C9A84C" letter-spacing="6">IET</text>
+<line x1="80" y1="340" x2="432" y2="340" stroke="#C9A84C" stroke-width="1.5"/>
+<text x="256" y="390" text-anchor="middle" font-family="Georgia, serif" font-size="42" fill="#1A1A1A" letter-spacing="8">GENERAL</text>
+</svg>

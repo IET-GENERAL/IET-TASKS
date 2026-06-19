@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IET TASKS — تحديث المهمة</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'IBM Plex Sans Arabic', sans-serif; background: #F7F6F2; color: #1A1916; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+.card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.1); width: 100%; max-width: 520px; overflow: hidden; }
+.header { background: #1D5FA8; padding: 24px; text-align: center; }
+.header h1 { color: white; font-size: 18px; font-weight: 600; }
+.header p { color: rgba(255,255,255,0.8); font-size: 13px; margin-top: 4px; }
+.body { padding: 24px; }
+.task-info { background: #F7F6F2; border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+.task-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.task-meta { font-size: 12px; color: #6B6860; display: flex; gap: 16px; flex-wrap: wrap; }
+.section-label { font-size: 13px; font-weight: 600; color: #1A1916; margin-bottom: 10px; }
+.status-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+.status-btn { padding: 10px 8px; border: 2px solid #E8E6DF; border-radius: 8px; background: white; font-family: inherit; font-size: 12px; font-weight: 500; cursor: pointer; text-align: center; transition: all 0.15s; color: #6B6860; }
+.status-btn:hover { border-color: #1D5FA8; color: #1D5FA8; }
+.status-btn.selected-done { border-color: #2D7A47; background: #E8F5ED; color: #2D7A47; }
+.status-btn.selected-progress { border-color: #1D5FA8; background: #EBF2FB; color: #1D5FA8; }
+.status-btn.selected-late { border-color: #B91C1C; background: #FEE2E2; color: #B91C1C; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 12px; font-weight: 500; color: #6B6860; margin-bottom: 6px; }
+.form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #E8E6DF; border-radius: 8px; font-size: 13px; font-family: inherit; background: #F7F6F2; resize: vertical; min-height: 100px; transition: border-color 0.15s; }
+.form-group textarea:focus { outline: none; border-color: #1D5FA8; background: white; }
+.upload-area { border: 2px dashed #E8E6DF; border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.15s; background: #F7F6F2; }
+.upload-area:hover { border-color: #1D5FA8; background: #EBF2FB; }
+.upload-area.has-file { border-color: #2D7A47; background: #E8F5ED; }
+.upload-icon { font-size: 32px; margin-bottom: 8px; }
+.upload-text { font-size: 13px; color: #6B6860; }
+.upload-text strong { color: #1D5FA8; }
+.file-name { font-size: 12px; color: #2D7A47; font-weight: 500; margin-top: 6px; }
+#file-input { display: none; }
+.submit-btn { width: 100%; padding: 14px; background: #1D5FA8; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; transition: opacity 0.15s; margin-top: 4px; }
+.submit-btn:hover { opacity: 0.9; }
+.submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.success-screen { text-align: center; padding: 40px 24px; }
+.success-icon { font-size: 64px; margin-bottom: 16px; }
+.success-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+.success-sub { font-size: 14px; color: #6B6860; }
+.error-screen { text-align: center; padding: 40px 24px; }
+.expired-screen { text-align: center; padding: 40px 24px; }
+.loading-screen { text-align: center; padding: 40px 24px; color: #6B6860; }
+.spinner { display: inline-block; width: 32px; height: 32px; border: 3px solid #E8E6DF; border-top-color: #1D5FA8; border-radius: 50%; animation: spin 0.7s linear infinite; margin-bottom: 12px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.progress-bar { height: 4px; background: #E8E6DF; border-radius: 2px; margin-top: 8px; overflow: hidden; display: none; }
+.progress-fill { height: 100%; background: #1D5FA8; border-radius: 2px; transition: width 0.3s; }
+.warning-box { background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #92400E; }
+</style>
+</head>
+<body>
+
+<div class="card" id="main-card">
+  <div class="header">
+    <h1>📊 IET TASKS</h1>
+    <p>تحديث حالة المهمة</p>
+  </div>
+  <div class="body" id="main-body">
+    <div class="loading-screen">
+      <div class="spinner"></div>
+      <p>جاري تحميل المهمة...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://eairusfgbqwpihkggtew.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_cOZGAA6WTx-g7OHVTC3UHg_NJc-KXmD';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+emailjs.init('DlYW_fltSgW2f9Gli');
+
+const EJS_SERVICE = 'service_kib2nap';
+const EJS_TEMPLATE = 'template_vnflpmm';
+
+let taskId = null;
+let selectedStatus = null;
+let task = null;
+let submitted = false;
+
+function getParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+function fmt(d) {
+  if (!d) return '—';
+  try { return new Date(d).toLocaleDateString('ar-SA'); } catch { return d; }
+}
+
+function isExpired(due_date) {
+  if (!due_date) return false;
+  const due = new Date(due_date);
+  due.setHours(23, 59, 59, 999);
+  return new Date() > due;
+}
+
+async function loadTask() {
+  taskId = getParam('task');
+  if (!taskId) { showError('رابط غير صحيح — لا يوجد معرّف للمهمة'); return; }
+
+  const { data, error } = await sb.from('tasks')
+    .select('*, assigned:employees!tasks_assigned_to_fkey(name,email), creator:employees!tasks_created_by_fkey(name,email)')
+    .eq('id', taskId).single();
+
+  if (error || !data) { showError('لم يتم العثور على المهمة'); return; }
+  task = data;
+
+  // منع إعادة الإرسال
+  if (task.summary || task.file_url) {
+    showAlreadySubmitted();
+    return;
+  }
+
+  // فحص انتهاء الصلاحية
+  if (isExpired(task.due_date)) {
+    await notifyExpiry();
+    showExpired();
+    return;
+  }
+
+  showForm();
+}
+
+function showForm() {
+  const daysLeft = task.due_date ? Math.ceil((new Date(task.due_date) - new Date()) / (1000*60*60*24)) : null;
+  const warning = daysLeft !== null && daysLeft <= 1 ? `<div class="warning-box">⚠️ تنبيه: موعد تسليم هذه المهمة ${daysLeft === 0 ? 'اليوم' : 'غداً'}!</div>` : '';
+
+  document.getElementById('main-body').innerHTML = `
+    ${warning}
+    <div class="task-info">
+      <div class="task-title">${task.title}</div>
+      <div class="task-meta">
+        <span>📅 الموعد: ${fmt(task.due_date)}</span>
+        <span>📌 الحالة: ${task.status}</span>
+        ${task.notes ? `<span>📋 ${task.notes}</span>` : ''}
+      </div>
+    </div>
+
+    <div class="section-label">تحديث الحالة *</div>
+    <div class="status-btns">
+      <button class="status-btn" onclick="selectStatus('مكتملة', this, 'selected-done')">✅ مكتملة</button>
+      <button class="status-btn" onclick="selectStatus('قيد التنفيذ', this, 'selected-progress')">🔄 قيد التنفيذ</button>
+      <button class="status-btn" onclick="selectStatus('متأخرة', this, 'selected-late')">⚠️ متأخرة</button>
+    </div>
+
+    <div class="form-group">
+      <label>ملخص ما تم إنجازه</label>
+      <textarea id="summary" placeholder="اكتب ملخصاً لما أنجزته أو ما تم العمل عليه..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>رفع ملف (صورة، مستند، PDF...) — اختياري</label>
+      <div class="upload-area" onclick="document.getElementById('file-input').click()" id="upload-area">
+        <div class="upload-icon">📎</div>
+        <div class="upload-text">اضغط لاختيار ملف أو اسحبه هنا<br><strong>صور، PDF، Word، Excel</strong></div>
+        <div class="file-name" id="file-name"></div>
+      </div>
+      <div class="progress-bar" id="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <input type="file" id="file-input" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" onchange="handleFile(this)">
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitUpdate()">📤 إرسال التحديث</button>
+    <p style="font-size:11px;color:#9E9C96;text-align:center;margin-top:12px;">⚠️ لا يمكن إعادة الإرسال بعد الضغط على زر الإرسال</p>
+  `;
+}
+
+function selectStatus(status, btn, cls) {
+  selectedStatus = status;
+  document.querySelectorAll('.status-btn').forEach(b => b.className = 'status-btn');
+  btn.classList.add(cls);
+}
+
+function handleFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('upload-area').classList.add('has-file');
+  document.getElementById('file-name').textContent = `✅ ${file.name} (${(file.size/1024).toFixed(0)} KB)`;
+}
+
+async function submitUpdate() {
+  if (submitted) { alert('تم الإرسال مسبقاً — لا يمكن الإرسال مرة أخرى'); return; }
+  if (!selectedStatus) { alert('يرجى اختيار حالة المهمة'); return; }
+
+  // فحص انتهاء الصلاحية مرة أخرى عند الإرسال
+  if (isExpired(task.due_date)) {
+    await notifyExpiry();
+    showExpired();
+    return;
+  }
+
+  const summary = document.getElementById('summary').value.trim();
+  const fileInput = document.getElementById('file-input');
+  const file = fileInput.files[0];
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  submitted = true;
+  btn.textContent = '⏳ جاري الإرسال...';
+
+  let fileUrl = null;
+
+  if (file) {
+    document.getElementById('progress-bar').style.display = 'block';
+    document.getElementById('progress-fill').style.width = '30%';
+    const ext = file.name.split('.').pop();
+    const fileName = `task-${taskId}-${Date.now()}.${ext}`;
+    const { data: uploadData, error: uploadError } = await sb.storage.from('task-files').upload(fileName, file, { upsert: true });
+    document.getElementById('progress-fill').style.width = '70%';
+    if (!uploadError) {
+      const { data: urlData } = sb.storage.from('task-files').getPublicUrl(fileName);
+      fileUrl = urlData.publicUrl;
+    }
+    document.getElementById('progress-fill').style.width = '90%';
+  }
+
+  const updateData = {
+    status: selectedStatus,
+    summary: summary || 'لا يوجد ملخص',
+    file_url: fileUrl || null,
+    updated_at: new Date().toISOString()
+  };
+
+  const { error } = await sb.from('tasks').update(updateData).eq('id', taskId);
+  if (error) {
+    btn.disabled = false;
+    submitted = false;
+    btn.textContent = '📤 إرسال التحديث';
+    alert('حدث خطأ — يرجى المحاولة مجدداً');
+    return;
+  }
+
+  if (file) document.getElementById('progress-fill').style.width = '100%';
+
+  // إرسال إشعار لمنشئ المهمة والمدير
+  await notifyUpdate(summary, fileUrl, selectedStatus);
+
+  showSuccess(selectedStatus);
+}
+
+async function notifyUpdate(summary, fileUrl, status) {
+  try {
+    const empName = task.assigned ? task.assigned.name : 'الموظف';
+    const msg = `قام ${empName} بتحديث المهمة "${task.title}" إلى "${status}"${summary ? `\n\nالملخص: ${summary}` : ''}${fileUrl ? `\n\nالملف المرفوع: ${fileUrl}` : ''}`;
+
+    // جمع المستلمين (منشئ المهمة + المدير) بدون تكرار
+    const recipients = [];
+    if (task.creator && task.creator.email) recipients.push(task.creator);
+    const { data: admins } = await sb.from('employees').select('name,email').eq('role','admin');
+    if (admins) {
+      admins.forEach(a => {
+        if (!recipients.find(r => r.email === a.email)) recipients.push(a);
+      });
+    }
+
+    for (const r of recipients) {
+      await emailjs.send(EJS_SERVICE, EJS_TEMPLATE, {
+        to_email: r.email,
+        to_name: r.name,
+        message: msg,
+        title: task.title,
+        status: status,
+        due_date: task.due_date || '—',
+        notes: summary || 'لا يوجد ملخص',
+        reply_link: fileUrl || '',
+        name: 'IET TASKS'
+      });
+    }
+  } catch(e) { console.error('فشل الإشعار:', e); }
+}
+
+async function notifyExpiry() {
+  try {
+    const empName = task.assigned ? task.assigned.name : 'الموظف';
+    const msg = `⚠️ انتهت صلاحية رابط تحديث المهمة "${task.title}" المخصصة لـ ${empName} — تجاوز الموعد المحدد`;
+
+    const recipients = [];
+    if (task.assigned && task.assigned.email) recipients.push(task.assigned);
+    if (task.creator && task.creator.email && !recipients.find(r=>r.email===task.creator.email)) recipients.push(task.creator);
+    const { data: admins } = await sb.from('employees').select('name,email').eq('role','admin');
+    if (admins) admins.forEach(a => { if(!recipients.find(r=>r.email===a.email)) recipients.push(a); });
+
+    // تحديث حالة المهمة لمتأخرة تلقائياً
+    await sb.from('tasks').update({ status: 'متأخرة', updated_at: new Date().toISOString() }).eq('id', taskId);
+
+    for (const r of recipients) {
+      await emailjs.send(EJS_SERVICE, EJS_TEMPLATE, {
+        to_email: r.email,
+        to_name: r.name,
+        message: msg,
+        title: task.title,
+        status: 'متأخرة',
+        due_date: task.due_date || '—',
+        notes: 'انتهت صلاحية الرابط — تجاوز الموعد المحدد',
+        reply_link: '',
+        name: 'IET TASKS'
+      });
+    }
+  } catch(e) { console.error('فشل إشعار الانتهاء:', e); }
+}
+
+function showSuccess(status) {
+  const icons = { 'مكتملة': '🎉', 'قيد التنفيذ': '🔄', 'متأخرة': '⚠️' };
+  document.getElementById('main-body').innerHTML = `
+    <div class="success-screen">
+      <div class="success-icon">${icons[status] || '✅'}</div>
+      <div class="success-title">تم إرسال التحديث بنجاح!</div>
+      <div class="success-sub">تم تحديث حالة المهمة إلى "<strong>${status}</strong>"<br>وإرسال إشعار لمنشئ المهمة والمدير.</div>
+    </div>`;
+}
+
+function showAlreadySubmitted() {
+  document.getElementById('main-body').innerHTML = `
+    <div class="success-screen">
+      <div class="success-icon">🔒</div>
+      <div class="success-title">تم الإرسال مسبقاً</div>
+      <div class="success-sub">لقد قمت بتحديث هذه المهمة من قبل.<br>لا يمكن إعادة الإرسال مرة أخرى.</div>
+    </div>`;
+}
+
+function showExpired() {
+  document.getElementById('main-body').innerHTML = `
+    <div class="expired-screen">
+      <div style="font-size:64px;margin-bottom:16px">⏰</div>
+      <div style="font-size:20px;font-weight:600;margin-bottom:8px;color:#B91C1C">انتهت صلاحية الرابط</div>
+      <div style="font-size:14px;color:#6B6860">تجاوز الموعد المحدد للمهمة.<br>تم تغيير الحالة إلى <strong>متأخرة</strong> تلقائياً<br>وإرسال إشعار للمدير ومنشئ المهمة.</div>
+    </div>`;
+}
+
+function showError(msg) {
+  document.getElementById('main-body').innerHTML = `
+    <div class="error-screen">
+      <div style="font-size:48px;margin-bottom:16px">❌</div>
+      <div style="font-size:16px;font-weight:600;margin-bottom:8px">حدث خطأ</div>
+      <div style="font-size:13px;color:#6B6860">${msg}</div>
+    </div>`;
+}
+
+loadTask();
+</script>
+</body>
+</html>
