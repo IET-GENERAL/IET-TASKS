@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IET GENERAL</title>
+<link rel="manifest" href="file:///C:/Users/Hp/Downloads/manifest.json">
+<meta name="theme-color" content="#C9A84C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="IET GENERAL">
+<link rel="apple-touch-icon" href="file:///C:/Users/Hp/Downloads/icon-192.svg">
+<script src="index.html.1_files/supabase-js@2"></script>
+<script src="index.html.1_files/email.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap');
+:root {
+  --bg: #F7F6F2; --surface: #FFFFFF; --border: #E8E6DF;
+  --text: #1A1916; --text-2: #6B6860; --text-3: #9E9C96;
+  --accent: #1D5FA8; --accent-light: #EBF2FB;
+  --green: #2D7A47; --green-light: #E8F5ED;
+  --amber: #B45309; --amber-light: #FEF3C7;
+  --red: #B91C1C; --red-light: #FEE2E2;
+  --radius: 10px; --shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'IBM Plex Sans Arabic', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; min-height: 100vh; }
+
+/* LOGIN */
+.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1D5FA8 0%, #0F3D6E 100%); }
+.login-box { background: white; border-radius: 16px; padding: 40px; width: 380px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.login-logo { text-align: center; margin-bottom: 28px; }
+.login-logo h1 { font-size: 22px; font-weight: 600; color: var(--text); margin-top: 12px; }
+.login-logo p { font-size: 13px; color: var(--text-3); margin-top: 4px; }
+.login-icon { font-size: 48px; }
+.login-field { margin-bottom: 16px; }
+.login-field label { display: block; font-size: 12px; font-weight: 500; color: var(--text-2); margin-bottom: 6px; }
+.login-field input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; background: var(--bg); transition: border-color 0.15s; }
+.login-field input:focus { outline: none; border-color: var(--accent); background: white; }
+.login-btn { width: 100%; padding: 11px; background: var(--accent); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+.login-btn:hover { opacity: 0.9; }
+.login-error { background: var(--red-light); color: var(--red); padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-top: 12px; display: none; }
+
+/* APP */
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 220px; background: var(--surface); border-left: 1px solid var(--border); padding: 20px 0; display: flex; flex-direction: column; position: fixed; height: 100vh; right: 0; z-index: 50; }
+.main { margin-right: 220px; padding: 24px; flex: 1; }
+.logo { padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.logo h1 { font-size: 15px; font-weight: 600; }
+.logo p { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; cursor: pointer; color: var(--text-2); font-size: 13px; transition: all 0.15s; border-right: 3px solid transparent; }
+.nav-item:hover { background: var(--bg); color: var(--text); }
+.nav-item.active { color: var(--accent); background: var(--accent-light); border-right-color: var(--accent); font-weight: 500; }
+.user-info { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
+.user-name { font-size: 13px; font-weight: 500; }
+.user-role { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.logout-btn { margin-top: 10px; font-size: 12px; color: var(--red); cursor: pointer; background: none; border: none; font-family: inherit; padding: 0; }
+
+/* Sections */
+.section { display: none; }
+.section.active { display: block; }
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.page-title { font-size: 20px; font-weight: 600; }
+.page-sub { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+
+/* Metrics */
+.metrics { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 24px; }
+.metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
+.metric-label { font-size: 11px; color: var(--text-3); margin-bottom: 8px; }
+.metric-value { font-size: 26px; font-weight: 600; line-height: 1; }
+.metric-sub { font-size: 11px; color: var(--text-2); margin-top: 6px; }
+
+/* Cards */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px; }
+.card-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.card-title { font-size: 14px; font-weight: 600; }
+
+/* Table */
+table { width: 100%; border-collapse: collapse; }
+th { text-align: right; padding: 10px 16px; font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; background: var(--bg); border-bottom: 1px solid var(--border); }
+td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #FAFAF8; }
+
+/* Badges */
+.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+.badge-green { background: var(--green-light); color: var(--green); }
+.badge-amber { background: var(--amber-light); color: var(--amber); }
+.badge-red { background: var(--red-light); color: var(--red); }
+.badge-blue { background: var(--accent-light); color: var(--accent); }
+.badge-gray { background: var(--bg); color: var(--text-2); border: 1px solid var(--border); }
+.badge-purple { background: #EDE9FE; color: #5B21B6; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: inherit; transition: all 0.15s; }
+.btn:hover { background: var(--bg); }
+.btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+.btn-primary:hover { background: #1750A0; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn-danger { background: var(--red-light); color: var(--red); border-color: #FECACA; }
+.btn-edit { background: var(--accent-light); color: var(--accent); border-color: #BFDBFE; }
+
+/* Progress */
+.progress { background: var(--bg); border-radius: 4px; height: 6px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 4px; }
+
+/* Avatar */
+.avatar { width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+
+/* Toolbar */
+.toolbar { display: flex; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.search { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; background: var(--bg); color: var(--text); font-family: inherit; }
+.search:focus { outline: none; border-color: var(--accent); }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--surface); border-radius: 14px; padding: 24px; width: 520px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+@media (max-width: 768px) {
+  .modal { width: 100%; max-width: 100vw; max-height: 85vh; border-radius: 16px 16px 0 0; position: fixed; bottom: 0; left: 0; right: 0; padding: 20px 16px; }
+  .modal-overlay.open { align-items: flex-end; }
+  .form-grid { grid-template-columns: 1fr !important; }
+}
+.modal-title { font-size: 17px; font-weight: 600; margin-bottom: 20px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-full { grid-column: 1/-1; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 12px; font-weight: 500; color: var(--text-2); }
+.form-group input, .form-group select, .form-group textarea { padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; background: var(--bg); color: var(--text); font-family: inherit; transition: border-color 0.15s; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--accent); background: white; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+/* Call */
+.call-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+.call-row:last-child { border-bottom: none; }
+.call-row:hover { background: #FAFAF8; }
+.call-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.call-info { flex: 1; }
+.call-name { font-size: 13px; font-weight: 500; }
+.call-meta { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+/* Toast */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1A1916; color: white; padding: 10px 20px; border-radius: 8px; font-size: 13px; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
+.toast.show { opacity: 1; }
+
+/* Loading */
+.loading { text-align: center; padding: 40px; color: var(--text-3); }
+.spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty { text-align: center; padding: 48px 24px; color: var(--text-3); }
+.empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+/* Admin badge */
+.admin-only { display: none; }
+body.is-admin .admin-only { display: inline-flex; }
+body.is-admin .admin-only-block { display: block; }
+
+@media (max-width: 768px) {
+  .sidebar { width: 100%; height: auto; position: fixed; bottom: 0; top: auto; border-left: none; border-top: 1px solid var(--border); flex-direction: row; padding: 0; }
+  .logo, .user-info { display: none; }
+  .nav-item { flex-direction: column; flex: 1; padding: 10px 5px; font-size: 10px; gap: 3px; border-right: none; border-top: 3px solid transparent; }
+  .nav-item.active { border-top-color: var(--accent); border-right-color: transparent; }
+  .main { margin-right: 0; margin-bottom: 70px; padding: 16px; }
+  .metrics { grid-template-columns: repeat(2,1fr); }
+  .form-grid { grid-template-columns: 1fr; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-page">
+  <div class="login-wrap">
+    <div class="login-box">
+      <div class="login-logo">
+        <div class="login-icon">📊</div>
+        <h1>IET TASKS</h1>
+        <p>سجّل دخولك للمتابعة</p>
+      </div>
+      <div class="login-field">
+        <label>رقم الموظف</label>
+        <input type="text" id="login-num" placeholder="مثال: 0001">
+      </div>
+      <div class="login-field">
+        <label>كلمة المرور</label>
+        <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="login-btn" onclick="doLogin()">دخول</button>
+      <div class="login-error" id="login-error">رقم الموظف أو كلمة المرور غير صحيحة</div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-page" style="display:none">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo">
+        <h1>📊 IET TASKS</h1>
+        <p>إدارة الفريق والمهام</p>
+      </div>
+      <nav>
+        <div class="nav-item active" onclick="switchTab('dashboard',this)">🏠 الرئيسية</div>
+        <div class="nav-item" onclick="switchTab('tasks',this)">✅ المهام</div>
+        <div class="nav-item" onclick="switchTab('targets',this)">🎯 التارجت</div>
+        <div class="nav-item" onclick="switchTab('calls',this)">📞 المكالمات</div>
+        <div class="nav-item admin-only" onclick="switchTab('employees',this)">👥 الموظفون</div>
+        <div class="nav-item admin-only" onclick="switchTab('reports',this)">📊 التقارير</div>
+      </nav>
+      <div class="user-info">
+        <div class="user-name" id="sidebar-name">—</div>
+        <div class="user-role" id="sidebar-role">—</div>
+        <button class="logout-btn" onclick="doLogout()">تسجيل الخروج</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- Dashboard -->
+      <div id="dashboard" class="section active">
+        <div class="page-header">
+          <div><div class="page-title">لوحة التحكم</div><div class="page-sub" id="today-label"></div></div>
+          <button class="btn" onclick="loadAll()">🔄 تحديث</button>
+        </div>
+        <div class="metrics">
+          <div class="metric"><div class="metric-label">إجمالي المهام</div><div class="metric-value" id="m-tasks">—</div><div class="metric-sub">هذا الشهر</div></div>
+          <div class="metric"><div class="metric-label">مهام مكتملة</div><div class="metric-value" id="m-done" style="color:var(--green)">—</div><div class="metric-sub" id="m-pct">—</div></div>
+          <div class="metric"><div class="metric-label">مكالمات مسجلة</div><div class="metric-value" id="m-calls">—</div><div class="metric-sub">إجمالي المكالمات</div></div>
+          <div class="metric"><div class="metric-label">الموظفون</div><div class="metric-value" id="m-emps">—</div><div class="metric-sub">موظف نشط</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">آخر المهام</span><button class="btn btn-sm" onclick="switchTab('tasks',null)">عرض الكل</button></div>
+          <div id="dash-tasks"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+
+      <!-- Tasks -->
+      <div id="tasks" class="section">
+        <div class="page-header">
+          <div><div class="page-title">المهام</div><div class="page-sub">متابعة وتوزيع مهام الفريق</div></div>
+          <button class="btn btn-primary" onclick="openModal('modal-task');editingId=null;document.getElementById('modal-task-title').textContent='➕ مهمة جديدة'">+ مهمة جديدة</button>
+        </div>
+        <div class="card">
+          <div class="toolbar">
+            <input class="search" placeholder="بحث..." oninput="renderTasks(filterList(allTasks,this.value,['title','notes']))">
+            <select class="btn" id="filter-task-emp" onchange="applyTaskFilters()">
+              <option value="" selected="selected">كل الموظفين</option>
+            </select>
+            <select class="btn" onchange="applyTaskFilters(this.value,'status')">
+              <option value="" selected="selected">الكل</option>
+              <option>قيد التنفيذ</option><option>مكتملة</option><option>متأخرة</option>
+            </select>
+            <input type="date" class="search" id="filter-task-from" onchange="applyTaskFilters()" style="flex:0;width:130px;font-size:12px">
+            <input type="date" class="search" id="filter-task-to" onchange="applyTaskFilters()" style="flex:0;width:130px;font-size:12px">
+          </div>
+          <table><thead><tr><th>المهمة</th><th>المسؤول</th><th>المنشئ</th><th>الأولوية</th><th>الموعد</th><th>الحالة</th><th></th></tr></thead>
+          <tbody id="tasks-body"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- Targets -->
+      <div id="targets" class="section">
+        <div class="page-header">
+          <div><div class="page-title">التارجت</div><div class="page-sub">الأهداف الشهرية للموظفين</div></div>
+          <button class="btn btn-primary" onclick="openModal('modal-target');editingId=null;document.getElementById('modal-target-title').textContent='🎯 تارجت جديد'">+ تارجت جديد</button>
+        </div>
+        <div class="card">
+          <table><thead><tr><th>الموظف</th><th>النوع</th><th>الهدف</th><th>المنجز</th><th>التقدم</th><th>الحالة</th><th></th></tr></thead>
+          <tbody id="targets-body"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- Calls -->
+      <div id="calls" class="section">
+        <div class="page-header">
+          <div><div class="page-title">سجل المكالمات</div><div class="page-sub">تسجيل وأرشفة جميع المكالمات</div></div>
+          <button class="btn btn-primary" onclick="openModal('modal-call');editingId=null;document.getElementById('modal-call-title').textContent='📞 تسجيل مكالمة'">+ تسجيل مكالمة</button>
+        </div>
+        <div class="card">
+          <div class="toolbar" style="flex-wrap:wrap;gap:8px">
+            <input class="search" placeholder="بحث..." oninput="renderCalls(filterList(allCalls,this.value,['with_whom','notes']))">
+            <select class="btn" id="filter-call-emp" onchange="applyCallFilters()">
+              <option value="" selected="selected">كل الموظفين</option>
+            </select>
+            <select class="btn" id="filter-call-type" onchange="applyCallFilters()">
+              <option value="" selected="selected">الكل</option><option>مع عميل</option><option>داخلية</option>
+            </select>
+            <input type="date" class="search" id="filter-call-from" onchange="applyCallFilters()" style="flex:0;width:130px;font-size:12px">
+            <input type="date" class="search" id="filter-call-to" onchange="applyCallFilters()" style="flex:0;width:130px;font-size:12px">
+          </div>
+          <div id="calls-list"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+
+      <!-- Employees (admin only) -->
+      <div id="employees" class="section">
+        <div class="page-header">
+          <div><div class="page-title">الموظفون</div><div class="page-sub">إدارة بيانات الفريق</div></div>
+          <button class="btn btn-primary" onclick="openModal('modal-emp');editingId=null;document.getElementById('modal-emp-title').textContent='👤 موظف جديد';document.getElementById('e-pass').required=true">+ موظف جديد</button>
+        </div>
+        <div class="card">
+          <table><thead><tr><th>الاسم</th><th>رقم الموظف</th><th>القسم</th><th>الإيميل</th><th>الدور</th><th></th></tr></thead>
+          <tbody id="emp-body"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table>
+        </div>
+      </div>
+      <!-- Reports (admin only) -->
+      <div id="reports" class="section">
+        <div class="page-header">
+          <div><div class="page-title">التقارير</div><div class="page-sub">ملخصات الموظفين والملفات المرفوعة</div></div>
+          <button class="btn" onclick="loadReports()">🔄 تحديث</button>
+        </div>
+        <div class="card">
+          <div class="toolbar" style="flex-wrap:wrap;gap:8px">
+            <select class="btn" id="filter-report-emp" onchange="filterReports()">
+              <option value="" selected="selected">كل الموظفين</option>
+            </select>
+            <select class="btn" id="filter-report-status" onchange="filterReports()">
+              <option value="" selected="selected">كل الحالات</option>
+              <option>مكتملة</option>
+              <option>قيد التنفيذ</option>
+              <option>متأخرة</option>
+            </select>
+            <input type="date" class="search" id="filter-date-from" onchange="filterReports()" style="flex:0;width:140px;font-size:12px">
+            <input type="date" class="search" id="filter-date-to" onchange="filterReports()" style="flex:0;width:140px;font-size:12px">
+            <button class="btn" onclick="clearReportFilters()">✖ مسح</button>
+          </div>
+          <div class="card-header"><span class="card-title">📋 ردود الموظفين على المهام</span><span id="report-count" style="font-size:12px;color:var(--text-3)"></span></div>
+          <table>
+            <thead><tr><th>المهمة</th><th>الموظف</th><th>الحالة</th><th>ملخص الموظف</th><th>الملف المرفوع</th><th>آخر تحديث</th></tr></thead>
+            <tbody id="reports-body"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-task">
+  <div class="modal">
+    <div class="modal-title" id="modal-task-title">➕ مهمة جديدة</div>
+    <div class="form-grid">
+      <div class="form-group form-full"><label>عنوان المهمة *</label><input type="text" id="t-title" placeholder="وصف المهمة..."></div>
+      <div class="form-group"><label>الموظف المسؤول *</label><select id="t-emp"></select></div>
+      <div class="form-group"><label>الأولوية</label><select id="t-priority"><option>عالية</option><option selected="selected">متوسطة</option><option>منخفضة</option></select></div>
+      <div class="form-group"><label>تاريخ الاستحقاق</label><input type="date" id="t-date" value="2026-06-20"></div>
+      <div class="form-group"><label>الحالة</label><select id="t-status"><option selected="selected">قيد التنفيذ</option><option>مكتملة</option><option>متأخرة</option><option>قيد الحوار</option></select></div>
+      <div class="form-group form-full"><label>ملاحظات</label><textarea id="t-notes" rows="2" placeholder="تفاصيل إضافية..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-task')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveTask()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-target">
+  <div class="modal">
+    <div class="modal-title" id="modal-target-title">🎯 تارجت جديد</div>
+    <div class="form-grid">
+      <div class="form-group"><label>الموظف *</label><select id="tg-emp"></select></div>
+      <div class="form-group"><label>نوع الهدف</label><select id="tg-type"><option selected="selected">مبيعات (ريال)</option><option>عدد مكالمات</option><option>عدد مهام</option><option>عدد عملاء</option></select></div>
+      <div class="form-group"><label>الهدف *</label><input type="number" id="tg-goal" placeholder="0"></div>
+      <div class="form-group"><label>المنجز حتى الآن</label><input type="number" id="tg-achieved" placeholder="0"></div>
+      <div class="form-group"><label>الشهر</label><input type="month" id="tg-month" value="2026-06"></div>
+      <div class="form-group"><label>ملاحظات</label><input type="text" id="tg-notes" placeholder="اختياري..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-target')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveTarget()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-call">
+  <div class="modal">
+    <div class="modal-title" id="modal-call-title">📞 تسجيل مكالمة</div>
+    <div class="form-grid">
+      <div class="form-group"><label>الموظف *</label><select id="c-emp"></select></div>
+      <div class="form-group"><label>نوع المكالمة</label><select id="c-type"><option selected="selected">مع عميل</option><option>داخلية</option></select></div>
+      <div class="form-group"><label>الطرف الثاني *</label><input type="text" id="c-with" placeholder="اسم العميل أو الموظف..."></div>
+      <div class="form-group"><label>مدة المكالمة (دقيقة)</label><input type="number" id="c-dur" placeholder="5"></div>
+      <div class="form-group"><label>التاريخ</label><input type="date" id="c-date" value="2026-06-20"></div>
+      <div class="form-group"><label>الوقت</label><input type="time" id="c-time" value="21:41"></div>
+      <div class="form-group form-full"><label>ملخص المكالمة</label><textarea id="c-notes" rows="3" placeholder="ما الذي تم الاتفاق عليه؟"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-call')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveCall()">💾 تسجيل</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-emp">
+  <div class="modal">
+    <div class="modal-title" id="modal-emp-title">👤 موظف جديد</div>
+    <div class="form-grid">
+      <div class="form-group"><label>الاسم الكامل *</label><input type="text" id="e-name" placeholder="محمد أحمد"></div>
+      <div class="form-group"><label>رقم الموظف *</label><input type="text" id="e-num" placeholder="0002"></div>
+      <div class="form-group"><label>القسم</label><input type="text" id="e-dept" placeholder="المبيعات..."></div>
+      <div class="form-group"><label>رقم الهاتف</label><input type="text" id="e-phone" placeholder="+966..."></div>
+      <div class="form-group"><label>البريد الإلكتروني *</label><input type="email" id="e-email" placeholder="email@company.com"></div>
+      <div class="form-group"><label>كلمة المرور *</label><input type="password" id="e-pass" placeholder="••••••••"></div>
+      <div class="form-group"><label>الدور</label><select id="e-role"><option value="employee" selected="selected">موظف</option><option value="admin">مدير</option></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-emp')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveEmployee()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-chat">
+  <div class="modal" style="width:580px">
+    <div class="modal-title" id="chat-task-title">💬 حوار المهمة</div>
+    <div id="chat-status-bar" style="margin-bottom:12px"></div>
+    <div id="chat-messages" style="background:var(--bg);border-radius:10px;padding:12px;min-height:200px;max-height:350px;overflow-y:auto;margin-bottom:12px;display:flex;flex-direction:column;gap:8px"></div>
+    <div style="display:flex;gap:8px;align-items:flex-end">
+      <textarea id="chat-input" rows="2" placeholder="اكتب ردك هنا..." style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:var(--bg);resize:none"></textarea>
+      <button class="btn btn-primary" onclick="sendComment()" style="height:fit-content">إرسال</button>
+    </div>
+    <div id="chat-close-btn" style="margin-top:12px;display:none">
+      <button class="btn btn-sm badge-green" style="background:var(--green-light);color:var(--green);border-color:#BBF7D0" onclick="closeTask()">✅ إغلاق المهمة وجعلها مكتملة</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-chat')">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://eairusfgbqwpihkggtew.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_cOZGAA6WTx-g7OHVTC3UHg_NJc-KXmD';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// EmailJS
+const EJS_SERVICE = 'service_kib2nap';
+const EJS_TEMPLATE = 'template_vnflpmm';
+const EJS_PUBLIC = 'DlYW_fltSgW2f9Gli';
+emailjs.init(EJS_PUBLIC);
+
+const NETLIFY_URL = 'https://superlative-cuchufli-d42419.netlify.app';
+
+async function sendNotification(empId, message, title, status, due_date, taskId, notes) {
+  try {
+    const emp = allEmployees.find(e => e.id === empId);
+    if (!emp || !emp.email) return;
+    const replyLink = taskId ? `${NETLIFY_URL}/task-reply.html?task=${taskId}` : '';
+    await emailjs.send(EJS_SERVICE, EJS_TEMPLATE, {
+      to_email: emp.email,
+      to_name: emp.name,
+      message: message,
+      title: title || '—',
+      status: status || '—',
+      due_date: due_date || '—',
+      notes: notes || 'لا توجد ملاحظات',
+      name: 'IET TASKS',
+      reply_link: replyLink
+    });
+    console.log('إشعار أُرسل إلى', emp.email);
+  } catch(e) {
+    console.error('فشل إرسال الإشعار:', e);
+  }
+}
+
+let currentUser = null;
+let editingId = null;
+let allTasks = [], allCalls = [], allEmployees = [], allTargets = [];
+
+const AVT = [['#DBEAFE','#1D4ED8'],['#DCF5E7','#166534'],['#FEF3C7','#92400E'],['#FCE7F3','#9D174D'],['#EDE9FE','#5B21B6'],['#FEE2E2','#991B1B']];
+function avt(name,i){const[bg,fg]=AVT[(i||0)%AVT.length];return `<div class="avatar" style="background:${bg};color:${fg}">${(name||'?').split(' ').map(w=>w[0]).join('').slice(0,2)}</div>`;}
+function empIdx(id){return allEmployees.findIndex(e=>e.id===id);}
+function empName(id){const e=allEmployees.find(e=>e.id===id);return e?e.name:'—';}
+function today(){return new Date().toISOString().split('T')[0];}
+function nowTime(){return new Date().toTimeString().slice(0,5);}
+function nowMonth(){return new Date().toISOString().slice(0,7);}
+function fmt(d){if(!d)return '—';try{return new Date(d).toLocaleDateString('ar-SA');}catch{return d;}}
+
+function toast(msg,dur=3000){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),dur);}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+function switchTab(name,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  if(el)el.classList.add('active');
+  else document.querySelectorAll('.nav-item').forEach(n=>{if(n.textContent.includes(({dashboard:'الرئيسية',tasks:'المهام',targets:'التارجت',calls:'المكالمات',employees:'الموظفون',reports:'التقارير'})[name]))n.classList.add('active');});
+  if(name==='reports') loadReports();
+}
+
+function filterList(list,q,fields){if(!q)return list;const f=q.toLowerCase();return list.filter(i=>fields.some(k=>(i[k]||'').toLowerCase().includes(f)));}
+
+// LOGIN
+async function doLogin(){
+  const num=document.getElementById('login-num').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  if(!num||!pass){document.getElementById('login-error').style.display='block';return;}
+  const{data,error}=await sb.from('employees').select('*').eq('employee_number',num).eq('password',pass).single();
+  if(error||!data){document.getElementById('login-error').style.display='block';return;}
+  currentUser=data;
+  // حفظ بيانات الدخول
+  localStorage.setItem('iet_user', JSON.stringify(data));
+  showApp(data);
+}
+
+function showApp(data){
+  document.getElementById('login-page').style.display='none';
+  document.getElementById('app-page').style.display='block';
+  document.getElementById('sidebar-name').textContent=data.name;
+  document.getElementById('sidebar-role').textContent=data.role==='admin'?'مدير':'موظف';
+  if(data.role==='admin')document.body.classList.add('is-admin');
+  document.getElementById('today-label').textContent=new Date().toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  loadAll();
+}
+
+function doLogout(){
+  currentUser=null;
+  localStorage.removeItem('iet_user');
+  document.body.classList.remove('is-admin');
+  document.getElementById('login-page').style.display='block';
+  document.getElementById('app-page').style.display='none';
+  document.getElementById('login-error').style.display='none';
+  document.getElementById('login-num').value='';
+  document.getElementById('login-pass').value='';
+}
+
+// تحقق من الجلسة المحفوظة عند التحميل
+const savedUser = localStorage.getItem('iet_user');
+if(savedUser){
+  try {
+    currentUser = JSON.parse(savedUser);
+    showApp(currentUser);
+  } catch(e) {
+    localStorage.removeItem('iet_user');
+  }
+}
+
+// LOAD
+async function loadAll(){
+  const[emps,tasks,targets,calls]=await Promise.all([
+    sb.from('employees').select('*').order('id'),
+    sb.from('tasks').select('*').order('created_at',{ascending:false}),
+    sb.from('targets').select('*').order('created_at',{ascending:false}),
+    sb.from('calls').select('*').order('created_at',{ascending:false})
+  ]);
+  allEmployees=emps.data||[];
+  allTasks=tasks.data||[];
+  allTargets=targets.data||[];
+  allCalls=calls.data||[];
+  populateSelects();
+  // تعبئة فلاتر الموظفين
+  const empOpts = '<option value="">كل الموظفين</option>' + allEmployees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+  ['filter-task-emp','filter-call-emp','filter-report-emp'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=empOpts;});
+  renderDashboard();renderTasks(allTasks);renderTargets();renderCalls(allCalls);renderEmployees();
+}
+
+function populateSelects(){
+  const opts=allEmployees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+  ['t-emp','tg-emp','c-emp'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<option value="">اختر موظف</option>'+opts;});
+}
+
+// DASHBOARD
+function renderDashboard(){
+  const total=allTasks.length,done=allTasks.filter(t=>t.status==='مكتملة').length;
+  document.getElementById('m-tasks').textContent=total;
+  document.getElementById('m-done').textContent=done;
+  document.getElementById('m-pct').textContent=total?`${Math.round(done/total*100)}% من الإجمالي`:'—';
+  document.getElementById('m-calls').textContent=allCalls.length;
+  document.getElementById('m-emps').textContent=allEmployees.length;
+  const recent=allTasks.slice(0,5);
+  document.getElementById('dash-tasks').innerHTML=recent.length?`<table><thead><tr><th>المهمة</th><th>المسؤول</th><th>الحالة</th></tr></thead><tbody>${recent.map(t=>`<tr><td style="font-weight:500">${t.title}</td><td>${empName(t.assigned_to)}</td><td>${sBadge(t.status)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty"><div class="empty-icon">📋</div><p>لا توجد مهام بعد</p></div>';
+}
+
+// TASKS
+function renderTasks(list){
+  const tbody=document.getElementById('tasks-body');
+  // الموظف العادي يرى فقط مهامه
+  if(currentUser&&currentUser.role!=='admin'){
+    list=list.filter(t=>t.assigned_to===currentUser.id||t.created_by===currentUser.id);
+  }
+  if(!list.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-icon">✅</div><p>لا توجد مهام</p></div></td></tr>';return;}
+  tbody.innerHTML=list.map(t=>{
+    const ei=empIdx(t.assigned_to);
+    const canEdit=currentUser&&(currentUser.role==='admin'||currentUser.id===t.created_by);
+    return`<tr>
+      <td style="font-weight:500">${t.title}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">${avt(empName(t.assigned_to),ei)}<span>${empName(t.assigned_to)}</span></div></td>
+      <td style="font-size:12px;color:var(--text-2)">${empName(t.created_by)||'—'}</td>
+      <td>${pBadge(t.priority)}</td>
+      <td style="font-size:12px;color:var(--text-2)">${fmt(t.due_date)}</td>
+      <td>${sBadge(t.status)}</td>
+      <td style="white-space:nowrap">
+        ${canEdit?`<button class="btn btn-edit btn-sm" onclick="editTask(${t.id})">✏️ تعديل</button>`:''}
+        <button class="btn btn-sm" style="background:#EDE9FE;color:#5B21B6;border-color:#DDD6FE;margin-right:4px" onclick="openChat(${t.id})">💬 حوار</button>
+        ${currentUser&&currentUser.role==='admin'?`<button class="btn btn-danger btn-sm" style="margin-right:4px" onclick="deleteRow('tasks',${t.id},loadAll)">🗑️</button>`:''}
+      </td></tr>`;
+  }).join('');
+}
+
+// TARGETS
+function renderTargets(){
+  const tbody=document.getElementById('targets-body');
+  if(!allTargets.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-icon">🎯</div><p>لا توجد أهداف</p></div></td></tr>';return;}
+  tbody.innerHTML=allTargets.map(t=>{
+    const pct=t.goal?Math.min(100,Math.round((t.achieved/t.goal)*100)):0;
+    const col=pct>=80?'var(--green)':pct>=50?'#D97706':'var(--red)';
+    const b=pct>=80?'badge-green':pct>=50?'badge-amber':'badge-red';
+    const ei=empIdx(t.employee_id);
+    const canEdit=currentUser&&(currentUser.role==='admin'||currentUser.id===t.created_by);
+    return`<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">${avt(empName(t.employee_id),ei)}<span>${empName(t.employee_id)}</span></div></td>
+      <td style="font-size:12px;color:var(--text-2)">${t.type||'—'}</td>
+      <td>${(t.goal||0).toLocaleString()}</td>
+      <td>${(t.achieved||0).toLocaleString()}</td>
+      <td style="min-width:140px"><div style="display:flex;align-items:center;gap:8px"><div class="progress" style="flex:1"><div class="progress-fill" style="width:${pct}%;background:${col}"></div></div><span style="font-size:12px;font-weight:600">${pct}%</span></div></td>
+      <td><span class="badge ${b}">${pct>=80?'ممتاز':pct>=50?'جيد':'يحتاج جهد'}</span></td>
+      <td style="white-space:nowrap">
+        ${canEdit?`<button class="btn btn-edit btn-sm" onclick="editTarget(${t.id})">✏️</button>`:''}
+        ${currentUser&&currentUser.role==='admin'?`<button class="btn btn-danger btn-sm" style="margin-right:4px" onclick="deleteRow('targets',${t.id},loadAll)">🗑️</button>`:''}
+      </td></tr>`;
+  }).join('');
+}
+
+// CALLS
+function renderCalls(list){
+  const el=document.getElementById('calls-list');
+  if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">📞</div><p>لا توجد مكالمات</p></div>';return;}
+  el.innerHTML=list.map(c=>{
+    const isClient=c.call_type==='مع عميل';
+    const ei=empIdx(c.employee_id);
+    const canEdit=currentUser&&(currentUser.role==='admin'||currentUser.id===c.created_by);
+    return`<div class="call-row">
+      <div class="call-icon" style="background:${isClient?'var(--accent-light)':'var(--green-light)'}">${isClient?'🏢':'👥'}</div>
+      ${avt(empName(c.employee_id),ei)}
+      <div class="call-info">
+        <div class="call-name">${empName(c.employee_id)} <span style="color:var(--text-3);font-weight:400">← ${c.with_whom||'—'}</span></div>
+        <div class="call-meta">${c.call_date||''} ${c.call_time||''} · <span class="badge ${isClient?'badge-blue':'badge-green'}" style="font-size:10px;padding:1px 7px">${c.call_type}</span>${c.notes?` · ${c.notes}`:''}</div>
+      </div>
+      <div style="font-size:13px;color:var(--text-2);white-space:nowrap;margin-right:auto;padding-right:12px">⏱ ${c.duration||0} د</div>
+      <div style="white-space:nowrap">
+        ${canEdit?`<button class="btn btn-edit btn-sm" onclick="editCall(${c.id})">✏️</button>`:''}
+        ${currentUser&&currentUser.role==='admin'?`<button class="btn btn-danger btn-sm" style="margin-right:4px" onclick="deleteRow('calls',${c.id},loadAll)">🗑️</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// EMPLOYEES
+function renderEmployees(){
+  const tbody=document.getElementById('emp-body');
+  if(!allEmployees.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty"><div class="empty-icon">👥</div><p>لا يوجد موظفون</p></div></td></tr>';return;}
+  tbody.innerHTML=allEmployees.map((e,i)=>`<tr>
+    <td><div style="display:flex;align-items:center;gap:10px">${avt(e.name,i)}<span style="font-weight:500">${e.name}</span></div></td>
+    <td style="color:var(--text-2)">${e.employee_number}</td>
+    <td style="color:var(--text-2)">${e.department||'—'}</td>
+    <td style="color:var(--text-2);font-size:12px">${e.email}</td>
+    <td><span class="badge ${e.role==='admin'?'badge-purple':'badge-blue'}">${e.role==='admin'?'مدير':'موظف'}</span></td>
+    <td><button class="btn btn-edit btn-sm" onclick="editEmployee(${e.id})">✏️ تعديل</button></td>
+  </tr>`).join('');
+}
+
+// BADGES
+function sBadge(s){return({'مكتملة':'<span class="badge badge-green">مكتملة</span>','قيد التنفيذ':'<span class="badge badge-blue">قيد التنفيذ</span>','متأخرة':'<span class="badge badge-red">متأخرة</span>','قيد الحوار':'<span class="badge badge-purple">💬 قيد الحوار</span>'})[s]||`<span class="badge badge-gray">${s||'—'}</span>`;}
+function pBadge(p){return({'عالية':'<span class="badge badge-red">عالية</span>','متوسطة':'<span class="badge badge-amber">متوسطة</span>','منخفضة':'<span class="badge badge-gray">منخفضة</span>'})[p]||`<span class="badge badge-gray">${p||'—'}</span>`;}
+
+// SAVE TASK
+async function saveTask(){
+  const title=document.getElementById('t-title').value.trim();
+  const emp=document.getElementById('t-emp').value;
+  if(!title||!emp){toast('⚠️ يرجى إدخال العنوان واختيار الموظف');return;}
+  const row={title,assigned_to:parseInt(emp),priority:document.getElementById('t-priority').value,due_date:document.getElementById('t-date').value||null,status:document.getElementById('t-status').value,notes:document.getElementById('t-notes').value,created_by:currentUser.id,updated_at:new Date().toISOString()};
+  toast('⏳ جاري الحفظ...');
+  let res;
+  if(editingId){res=await sb.from('tasks').update(row).eq('id',editingId);}
+  else{res=await sb.from('tasks').insert(row);}
+  if(res.error){toast('❌ فشل الحفظ');return;}
+  closeModal('modal-task');
+  document.getElementById('t-title').value='';document.getElementById('t-notes').value='';
+  await loadAll();
+  // إرسال إشعار للموظف
+  const msg = editingId
+    ? `تم تحديث مهمتك "${row.title}" — الحالة الجديدة: ${row.status}`
+    : `تم تكليفك بمهمة جديدة: "${row.title}"`;
+  const savedTask = await sb.from('tasks').select('id').eq('title', row.title).eq('assigned_to', parseInt(emp)).order('created_at', {ascending: false}).limit(1).single();
+  const tId = editingId || (savedTask.data ? savedTask.data.id : null);
+  await sendNotification(parseInt(emp), msg, row.title, row.status, row.due_date, tId, row.notes);
+  toast(editingId?'✅ تم تحديث المهمة وإرسال إشعار':'✅ تم حفظ المهمة وإرسال إشعار');
+  editingId=null;
+}
+
+async function editTask(id){
+  const t=allTasks.find(x=>x.id===id);if(!t)return;
+  editingId=id;
+  document.getElementById('modal-task-title').textContent='✏️ تعديل المهمة';
+  document.getElementById('t-title').value=t.title||'';
+  document.getElementById('t-emp').value=t.assigned_to||'';
+  document.getElementById('t-priority').value=t.priority||'متوسطة';
+  document.getElementById('t-date').value=t.due_date||'';
+  document.getElementById('t-status').value=t.status||'قيد التنفيذ';
+  document.getElementById('t-notes').value=t.notes||'';
+  openModal('modal-task');
+}
+
+// SAVE TARGET
+async function saveTarget(){
+  const emp=document.getElementById('tg-emp').value;
+  const goal=document.getElementById('tg-goal').value;
+  if(!emp||!goal){toast('⚠️ يرجى اختيار الموظف وإدخال الهدف');return;}
+  const row={employee_id:parseInt(emp),type:document.getElementById('tg-type').value,goal:parseFloat(goal),achieved:parseFloat(document.getElementById('tg-achieved').value)||0,month:document.getElementById('tg-month').value||nowMonth(),notes:document.getElementById('tg-notes').value,created_by:currentUser.id,updated_at:new Date().toISOString()};
+  toast('⏳ جاري الحفظ...');
+  let res;
+  if(editingId){res=await sb.from('targets').update(row).eq('id',editingId);}
+  else{res=await sb.from('targets').insert(row);}
+  if(res.error){toast('❌ فشل الحفظ');return;}
+  closeModal('modal-target');
+  document.getElementById('tg-goal').value='';document.getElementById('tg-achieved').value='';
+  await loadAll();
+  // إرسال إشعار للموظف
+  if(!editingId) {
+    await sendNotification(parseInt(emp), `تم تحديد تارجت جديد لك — النوع: ${row.type} — الهدف: ${row.goal.toLocaleString()}`, `تارجت ${row.type}`, `الهدف: ${row.goal.toLocaleString()}`, row.month);
+  }
+  toast(editingId?'✅ تم تحديث التارجت':'✅ تم حفظ التارجت وإرسال إشعار');
+  editingId=null;
+}
+
+async function editTarget(id){
+  const t=allTargets.find(x=>x.id===id);if(!t)return;
+  editingId=id;
+  document.getElementById('modal-target-title').textContent='✏️ تعديل التارجت';
+  document.getElementById('tg-emp').value=t.employee_id||'';
+  document.getElementById('tg-type').value=t.type||'مبيعات (ريال)';
+  document.getElementById('tg-goal').value=t.goal||'';
+  document.getElementById('tg-achieved').value=t.achieved||'';
+  document.getElementById('tg-month').value=t.month||'';
+  document.getElementById('tg-notes').value=t.notes||'';
+  openModal('modal-target');
+}
+
+// SAVE CALL
+async function saveCall(){
+  const emp=document.getElementById('c-emp').value;
+  const w=document.getElementById('c-with').value.trim();
+  if(!emp||!w){toast('⚠️ يرجى اختيار الموظف وإدخال الطرف الثاني');return;}
+  const row={employee_id:parseInt(emp),call_type:document.getElementById('c-type').value,with_whom:w,duration:parseInt(document.getElementById('c-dur').value)||0,call_date:document.getElementById('c-date').value||today(),call_time:document.getElementById('c-time').value||nowTime(),notes:document.getElementById('c-notes').value,created_by:currentUser.id};
+  toast('⏳ جاري التسجيل...');
+  let res;
+  if(editingId){res=await sb.from('calls').update(row).eq('id',editingId);}
+  else{res=await sb.from('calls').insert(row);}
+  if(res.error){toast('❌ فشل التسجيل');return;}
+  closeModal('modal-call');
+  document.getElementById('c-with').value='';document.getElementById('c-notes').value='';
+  await loadAll();
+  toast(editingId?'✅ تم تحديث المكالمة':'✅ تم تسجيل المكالمة');
+  editingId=null;
+}
+
+async function editCall(id){
+  const c=allCalls.find(x=>x.id===id);if(!c)return;
+  editingId=id;
+  document.getElementById('modal-call-title').textContent='✏️ تعديل المكالمة';
+  document.getElementById('c-emp').value=c.employee_id||'';
+  document.getElementById('c-type').value=c.call_type||'مع عميل';
+  document.getElementById('c-with').value=c.with_whom||'';
+  document.getElementById('c-dur').value=c.duration||'';
+  document.getElementById('c-date').value=c.call_date||'';
+  document.getElementById('c-time').value=c.call_time||'';
+  document.getElementById('c-notes').value=c.notes||'';
+  openModal('modal-call');
+}
+
+// SAVE EMPLOYEE
+async function saveEmployee(){
+  const name=document.getElementById('e-name').value.trim();
+  const num=document.getElementById('e-num').value.trim();
+  const email=document.getElementById('e-email').value.trim();
+  const pass=document.getElementById('e-pass').value;
+  if(!name||!num||!email){toast('⚠️ يرجى ملء الحقول المطلوبة');return;}
+  const row={name,employee_number:num,department:document.getElementById('e-dept').value,phone:document.getElementById('e-phone').value,email,role:document.getElementById('e-role').value};
+  if(pass)row.password=pass;
+  toast('⏳ جاري الحفظ...');
+  let res;
+  if(editingId){res=await sb.from('employees').update(row).eq('id',editingId);}
+  else{if(!pass){toast('⚠️ كلمة المرور مطلوبة');return;}res=await sb.from('employees').insert(row);}
+  if(res.error){toast('❌ فشل الحفظ: '+res.error.message);return;}
+  closeModal('modal-emp');
+  ['e-name','e-num','e-dept','e-phone','e-email','e-pass'].forEach(id=>document.getElementById(id).value='');
+  await loadAll();
+  toast(editingId?'✅ تم تحديث الموظف':'✅ تم إضافة الموظف');
+  editingId=null;
+}
+
+async function editEmployee(id){
+  const e=allEmployees.find(x=>x.id===id);if(!e)return;
+  editingId=id;
+  document.getElementById('modal-emp-title').textContent='✏️ تعديل بيانات الموظف';
+  document.getElementById('e-name').value=e.name||'';
+  document.getElementById('e-num').value=e.employee_number||'';
+  document.getElementById('e-dept').value=e.department||'';
+  document.getElementById('e-phone').value=e.phone||'';
+  document.getElementById('e-email').value=e.email||'';
+  document.getElementById('e-pass').value='';
+  document.getElementById('e-role').value=e.role||'employee';
+  openModal('modal-emp');
+}
+
+// DELETE (admin only)
+async function deleteRow(table,id,cb){
+  if(!confirm('هل أنت متأكد من الحذف؟ لا يمكن التراجع.'))return;
+  const{error}=await sb.from(table).delete().eq('id',id);
+  if(error){toast('❌ فشل الحذف');return;}
+  toast('🗑️ تم الحذف');
+  if(cb)await cb();
+}
+
+function applyTaskFilters() {
+  const empId = document.getElementById('filter-task-emp')?.value;
+  const from = document.getElementById('filter-task-from')?.value;
+  const to = document.getElementById('filter-task-to')?.value;
+  let list = [...allTasks];
+  if(empId) list = list.filter(t => t.assigned_to == empId);
+  if(from) list = list.filter(t => t.due_date && t.due_date >= from);
+  if(to) list = list.filter(t => t.due_date && t.due_date <= to);
+  renderTasks(list);
+}
+
+function applyCallFilters() {
+  const empId = document.getElementById('filter-call-emp')?.value;
+  const type = document.getElementById('filter-call-type')?.value;
+  const from = document.getElementById('filter-call-from')?.value;
+  const to = document.getElementById('filter-call-to')?.value;
+  let list = [...allCalls];
+  if(empId) list = list.filter(c => c.employee_id == empId);
+  if(type) list = list.filter(c => c.call_type === type);
+  if(from) list = list.filter(c => c.call_date && c.call_date >= from);
+  if(to) list = list.filter(c => c.call_date && c.call_date <= to);
+  renderCalls(list);
+}
+
+// REPORTS
+let allReports = [];
+async function loadReports() {
+  const { data, error } = await sb.from('tasks').select('*').order('updated_at', {ascending: false});
+  if (error) { toast('❌ فشل تحميل التقارير'); return; }
+  allReports = data || [];
+  // تعبئة فلتر الموظفين
+  const empSelect = document.getElementById('filter-report-emp');
+  if(empSelect) {
+    empSelect.innerHTML = '<option value="">كل الموظفين</option>' + allEmployees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+  }
+  renderReports(allReports);
+}
+
+function filterReports() {
+  const empId = document.getElementById('filter-report-emp').value;
+  const status = document.getElementById('filter-report-status').value;
+  const from = document.getElementById('filter-date-from').value;
+  const to = document.getElementById('filter-date-to').value;
+  let list = [...allReports];
+  if(empId) list = list.filter(t => t.assigned_to == empId);
+  if(status) list = list.filter(t => t.status === status);
+  if(from) list = list.filter(t => t.updated_at && t.updated_at >= from);
+  if(to) list = list.filter(t => t.updated_at && t.updated_at <= to+'T23:59:59');
+  renderReports(list);
+}
+
+function clearReportFilters() {
+  document.getElementById('filter-report-emp').value = '';
+  document.getElementById('filter-report-status').value = '';
+  document.getElementById('filter-date-from').value = '';
+  document.getElementById('filter-date-to').value = '';
+  renderReports(allReports);
+}
+
+function renderReports(list) {
+  const tbody = document.getElementById('reports-body');
+  const count = document.getElementById('report-count');
+  if(count) count.textContent = `${list.length} نتيجة`;
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-icon">📋</div><p>لا توجد نتائج</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(t => {
+    const ei = empIdx(t.assigned_to);
+    const fileBtn = t.file_url ? `<a href="${t.file_url}" target="_blank" class="btn btn-sm btn-edit">📎 تحميل</a>` : '<span style="color:var(--text-3);font-size:12px">لا يوجد</span>';
+    const updated = t.updated_at ? new Date(t.updated_at).toLocaleDateString('ar-SA') : '—';
+    return `<tr>
+      <td style="font-weight:500">${t.title}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">${avt(empName(t.assigned_to), ei)}<span>${empName(t.assigned_to)}</span></div></td>
+      <td>${sBadge(t.status)}</td>
+      <td style="font-size:12px;color:var(--text-2);max-width:200px">${t.summary || '<span style="color:var(--text-3)">لا يوجد ملخص</span>'}</td>
+      <td>${fileBtn}</td>
+      <td style="font-size:12px;color:var(--text-3)">${updated}</td>
+    </tr>`;
+  }).join('');
+}
+
+// CHAT
+let chatTaskId = null;
+let chatTask = null;
+
+async function openChat(taskId) {
+  chatTaskId = taskId;
+  chatTask = allTasks.find(t => t.id === taskId);
+  if(!chatTask) return;
+  document.getElementById('chat-task-title').textContent = `💬 ${chatTask.title}`;
+  document.getElementById('chat-status-bar').innerHTML = `الحالة: ${sBadge(chatTask.status)}`;
+  // زر الإغلاق للمدير أو المنشئ فقط
+  const canClose = currentUser && (currentUser.role==='admin' || currentUser.id===chatTask.created_by);
+  document.getElementById('chat-close-btn').style.display = canClose && chatTask.status !== 'مكتملة' ? 'block' : 'none';
+  openModal('modal-chat');
+  await loadComments();
+}
+
+async function loadComments() {
+  const {data} = await sb.from('comments').select('*').eq('task_id', chatTaskId).order('created_at');
+  const container = document.getElementById('chat-messages');
+  if(!data || !data.length) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-3);font-size:13px;padding:20px">لا توجد تعليقات بعد — ابدأ الحوار!</div>';
+    return;
+  }
+  container.innerHTML = data.map(c => {
+    const isMe = currentUser && c.employee_id === currentUser.id;
+    const name = empName(c.employee_id);
+    const time = new Date(c.created_at).toLocaleString('ar-SA');
+    const ei = empIdx(c.employee_id);
+    return `<div style="display:flex;gap:8px;align-items:flex-start;${isMe?'flex-direction:row-reverse':''}">
+      ${avt(name, ei)}
+      <div style="max-width:75%">
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:3px;${isMe?'text-align:left':''}">${name} · ${time}</div>
+        <div style="background:${isMe?'var(--accent)':'white'};color:${isMe?'white':'var(--text)'};padding:8px 12px;border-radius:${isMe?'12px 4px 12px 12px':'4px 12px 12px 12px'};font-size:13px;border:1px solid var(--border)">${c.content}</div>
+      </div>
+    </div>`;
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+async function sendComment() {
+  const content = document.getElementById('chat-input').value.trim();
+  if(!content) return;
+  const {error} = await sb.from('comments').insert({task_id: chatTaskId, employee_id: currentUser.id, content});
+  if(error) { toast('❌ فشل الإرسال'); return; }
+  document.getElementById('chat-input').value = '';
+
+  const isAdminOrCreator = currentUser.role==='admin' || currentUser.id===chatTask.created_by;
+
+  // تغيير الحالة لقيد الحوار عند رد المدير أو المنشئ (إلا لو مكتملة بقرار)
+  if(isAdminOrCreator && chatTask.status !== 'مكتملة') {
+    await sb.from('tasks').update({status:'قيد الحوار', updated_at: new Date().toISOString()}).eq('id', chatTaskId);
+    chatTask.status = 'قيد الحوار';
+    document.getElementById('chat-status-bar').innerHTML = `الحالة: ${sBadge('قيد الحوار')}`;
+    document.getElementById('chat-close-btn').style.display = 'block';
+    // إشعار الموظف المكلف
+    await sendNotification(chatTask.assigned_to, `لديك رد جديد على المهمة "${chatTask.title}":\n\n"${content}"`, chatTask.title, 'قيد الحوار', chatTask.due_date, chatTaskId, content);
+    await loadAll();
+  } else {
+    // الموظف يرد — إشعار للمنشئ والمدير
+    const recipients = new Set();
+    if(chatTask.created_by) recipients.add(chatTask.created_by);
+    // إشعار المدير
+    allEmployees.filter(e=>e.role==='admin').forEach(a=>recipients.add(a.id));
+    for(const rid of recipients) {
+      if(rid !== currentUser.id) {
+        await sendNotification(rid, `رد جديد من ${currentUser.name} على المهمة "${chatTask.title}":\n\n"${content}"`, chatTask.title, chatTask.status, chatTask.due_date, chatTaskId, content);
+      }
+    }
+  }
+  await loadComments();
+  toast('✅ تم إرسال الرد');
+}
+
+async function closeTask() {
+  if(!confirm('هل أنت متأكد من إغلاق المهمة وجعلها مكتملة؟')) return;
+  await sb.from('tasks').update({status:'مكتملة', updated_at: new Date().toISOString()}).eq('id', chatTaskId);
+  chatTask.status = 'مكتملة';
+  document.getElementById('chat-status-bar').innerHTML = `الحالة: ${sBadge('مكتملة')}`;
+  document.getElementById('chat-close-btn').style.display = 'none';
+  // إشعار الموظف
+  await sendNotification(chatTask.assigned_to, `تم إغلاق المهمة "${chatTask.title}" وتحديد حالتها كمكتملة`, chatTask.title, 'مكتملة', chatTask.due_date, chatTaskId, '');
+  await loadAll();
+  toast('✅ تم إغلاق المهمة');
+}
+
+// Set defaults
+document.getElementById('t-date').value=today();
+document.getElementById('c-date').value=today();
+document.getElementById('c-time').value=nowTime();
+document.getElementById('tg-month').value=nowMonth();
+</script>
+
+
+</body></html>
